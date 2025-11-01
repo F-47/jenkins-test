@@ -1,0 +1,20 @@
+@Library('my-shared-lib') _
+
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "executioner47/python-iti"
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+        stage('Docker') {
+            steps {
+                dockerPush("${IMAGE_NAME}")
+            }
+        }
+    }
+}

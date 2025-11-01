@@ -1,0 +1,13 @@
+@Library('my-shared-lib') _
+
+node {
+    def IMAGE_NAME = "executioner47/python-iti"
+
+    stage('Build') {
+        sh "mvn clean package"
+    }
+
+    stage('Docker') {
+        dockerPush("${IMAGE_NAME}")
+    }
+}
