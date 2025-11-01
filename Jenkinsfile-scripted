@@ -1,15 +1,7 @@
 node {
-    tools {
-        maven 'Maven3'
-    }
+    def maven = tool name: "Maven3", type: "maven"
     def IMAGE_NAME = "executioner47/python-iti"
     try {
-
-        stage('Checkout') {
-            echo "Pulling code from GitHub..."
-            git branch: 'main', url: 'https://github.com/Hassan-Eid-Hassan/python-iti.git'
-        }
-
         stage('Build') {
             echo "Starting Build..."
             echo "Build Number: ${currentBuild.number}"
