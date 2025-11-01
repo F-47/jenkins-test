@@ -1,17 +1,64 @@
-node("agent-ubuntu"){
-    def maven = tool name: "Maven3", type: "maven"
-    def jdk = tool name: "java-11", type: "jdk"
-    stage("Build"){
-        steps{
-            sh "java -version"
-            sh '''
-            env.PATH = "${maven}/bin:${env.PATH}"
-            '''
-            sh "java -version"
-            sh "mvn package install"
+node {
+    tools {
+        maven 'Maven3'
+    }
+    def IMAGE_NAME = "executioner47/python-iti"
+    try {
+
+        stage('Checkout') {
+            echo "Pulling code from GitHub..."
+            git branch: 'main', url: 'https://github.com/Hassan-Eid-Hassan/python-iti.git'
         }
+
+        stage('Build') {
+            echo "Starting Build..."
+            echo "Build Number: ${currentBuild.number}"
+
+            if (currentBuild.number.toInteger() < 5) {
+                error("Build number is less than 5. Stopping build!")
+            }
+
+            sh "mvn clean package"
+        }
+
+        stage('Docker Build') {
+            echo "Building Docker Image..."
+            sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} ."
+        }
+
+        stage('Docker Login') {
+            echo "Logging into Docker Hub..."
+            withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKERHUB_PASS')]) {
+                sh "echo $DOCKERHUB_PASS | docker login -u executioner47 --password-stdin"
+            }
+        }
+
+        stage('Docker Push') {
+            echo "Pushing Image to Docker Hub..."
+            sh "docker push ${IMAGE_NAME}:${env.BUILD_NUMBER}"
+        }
+
+        stage('Deploy') {
+            echo "Deploying App to Port 9000..."
+            sh """
+                docker rm -f python-app || true
+                docker run -d -p 9000:8080 --name python-app ${IMAGE_NAME}:${env.BUILD_NUMBER}
+            """
+        }
+
+        echo "✅ Pipeline finished successfully!"
+
+    } catch (err) {
+
+        echo "Pipeline failed: ${err}"
+        currentBuild.result = "FAILURE"
+        throw err
+
+    } finally {
+
+        echo "🧹 Cleaning workspace..."
+        cleanWs()
+
     }
-    stage("Test"){
-        sh "mvn test"
-    }
+
 }
