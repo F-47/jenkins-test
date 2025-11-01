@@ -6,6 +6,8 @@ node {
             echo "Starting Build..."
             echo "Build Number: ${currentBuild.number}"
 
+            checkout scm
+
             if (currentBuild.number.toInteger() < 5) {
                 error("Build number is less than 5. Stopping build!")
             }
