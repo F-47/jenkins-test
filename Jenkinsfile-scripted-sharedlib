@@ -1,4 +1,4 @@
-@Library('my-shared-lib') _
+@Library('jenkins-shared-lib') _
 
 node {
     def IMAGE_NAME = "executioner47/python-iti"
