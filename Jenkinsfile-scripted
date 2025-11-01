@@ -10,7 +10,7 @@ node {
                 error("Build number is less than 5. Stopping build!")
             }
 
-            sh "mvn clean package"
+            sh "${maven}/bin/mvn clean package"
         }
 
         stage('Docker Build') {
