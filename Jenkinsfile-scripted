@@ -3,12 +3,15 @@ node("agent-ubuntu"){
     def jdk = tool name: "java-11", type: "jdk"
     stage("Build"){
         steps{
+            sh "java -version"
+            sh '''
+            env.PATH = "${maven}/bin:${env.PATH}"
+            '''
+            sh "java -version"
             sh "mvn package install"
         }
     }
     stage("Test"){
-        steps{
-            sh "mvn test "
-        }
+        sh "mvn test"
     }
 }
